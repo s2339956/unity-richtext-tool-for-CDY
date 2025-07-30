@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unity Rich Text Editor</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #ffffff; padding: 20px; }
+    textarea, input, select { width: 100%; margin: 10px 0; padding: 10px; font-size: 16px; background: #2e2e2e; color: #fff; border: 1px solid #444; border-radius: 5px; }
+    .preview, .rendered { background: #111; padding: 10px; white-space: pre-wrap; border: 1px solid #444; border-radius: 5px; min-height: 100px; margin-bottom: 20px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; }
+    .controls button { flex: 1 1 auto; padding: 10px; background: #333; border: 1px solid #555; color: #fff; border-radius: 5px; cursor: pointer; }
+    .controls button:hover { background: #555; }
+    .unity-simulated b { font-weight: bold; }
+    .unity-simulated i { font-style: italic; }
+    .unity-simulated u { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>Unity 富文字語法編輯器</h1>
+
+  <textarea id="editor" rows="10" placeholder="輸入你的文字..."></textarea>
+
+  <div class="controls">
+    <button onclick="wrapTag('b')">粗體</button>
+    <button onclick="wrapTag('i')">斜體</button>
+    <button onclick="wrapTag('u')">底線</button>
+    <button onclick="wrapTag('color', getColor())">顏色</button>
+    <button onclick="wrapSizeTag()">字體大小</button>
+    
+  </div>
+
+  <label>顏色 HEX 值（或 red, orange...）：</label>
+  <input type="text" id="colorPicker" placeholder="#ff0000 or red" value="orange">
+
+  <label>字體大小：</label>
+  <input type="number" id="sizeInput" placeholder="32" value="32">
+
+  
+
+  <h3>🔍 預覽模擬（非真正渲染）：</h3>
+  <div class="rendered unity-simulated" id="rendered"></div>
+
+  <script>
+    const editor = document.getElementById('editor');
+        const rendered = document.getElementById('rendered');
+
+    editor.addEventListener('input', updateOutput);
+
+    function updateOutput() {
+      const value = editor.value;
+      
+      let renderedHTML = value
+        .replace(/<b>(.*?)<\/b>/g, '<b>$1</b>')
+        .replace(/<i>(.*?)<\/i>/g, '<i>$1</i>')
+        .replace(/<u>(.*?)<\/u>/g, '<u>$1</u>')
+        .replace(/<color=(.*?)>(.*?)<\/color>/g, '<span style="color:$1">$2</span>')
+        .replace(/<size=(\d+)>((.|\n)*?)<\/size>/g, '<span style="font-size:$1px">$2</span>');
+
+      rendered.innerHTML = renderedHTML;
+    }
+
+    function wrapTag(tag, attr) {
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const text = editor.value.substring(start, end) || '你的文字';
+      const before = editor.value.substring(0, start);
+      const after = editor.value.substring(end);
+
+      const tagOpen = attr ? `<${tag}=${attr}>` : `<${tag}>`;
+      const tagClose = `</${tag}>`;
+
+      editor.value = before + tagOpen + text + tagClose + after;
+      updateOutput();
+    }
+
+    function wrapSizeTag() {
+      const size = document.getElementById('sizeInput').value;
+      if (size && !isNaN(size)) {
+        wrapTag('size', size);
+      }
+    }
+
+    function getColor() {
+      return document.getElementById('colorPicker').value || 'orange';
+    }
+
+    
+    updateOutput();
+  </script>
+</body>
+</html>
