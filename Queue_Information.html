@@ -1,109 +1,106 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>Queue 佇列資訊</title>
+  <title>State Queue</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f7f7f7;
-      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1e1e1e;
+      color: #ffffff;
       padding: 20px;
-    }
-    h1 {
-      color: #444;
+      margin: 0;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
-      background: #fff;
     }
     th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: center;
+      padding: 12px;
+      border: 1px solid #444;
+      text-align: left;
     }
     th {
-      background-color: #f0f0f0;
+      background-color: #333;
     }
-    .waiting {
-      background-color: #d4f4dd;
+    tr:nth-child(even) {
+      background-color: #2a2a2a;
     }
-    .hold {
-      background-color: #fbe3e3;
+    tr.waiting {
+      background-color: #1e3d1e;
+    }
+    tr.deferred {
+      background-color: #3d1e1e;
     }
     input[type="text"] {
-      padding: 8px;
       width: 100%;
-      max-width: 300px;
+      padding: 10px;
       margin-top: 10px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 16px;
+      background: #2e2e2e;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>科技升級佇列資訊</h1>
-  <input type="text" id="searchBox" placeholder="🔍 搜尋玩家、聯盟或狀態...">
+  <h1>State 174 科技佇列排行榜</h1>
+  <input type="text" id="search" placeholder="搜尋玩家、聯盟、狀態或目的...">
   <table id="queueTable">
     <thead>
       <tr>
         <th>Queue</th>
-        <th>Player Name</th>
+        <th>Player</th>
         <th>Alliance</th>
+        <th>Upgrade Purpose</th>
         <th>State</th>
-        <th>Reason</th>
+        <th>Title</th>
+        <th>Time</th>
       </tr>
     </thead>
-    <tbody>
-      <tr><td colspan="5">Loading data...</td></tr>
-    </tbody>
+    <tbody></tbody>
   </table>
-
   <script>
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/1JyyAM9uiwLi36O1ayW9KQ6zlNY4HwoTe1GtQSPPqe7E/export?format=csv&gid=1929858160';
-
-    async function loadCSV(url) {
+    async function loadCSVFromGoogleSheet() {
+      const url = 'https://docs.google.com/spreadsheets/d/1JyyAM9uiwLi36O1ayW9KQ6zlNY4HwoTe1GtQSPPqe7E/export?format=csv&gid=1929858160';
       const response = await fetch(url);
       const text = await response.text();
-      return text.split('\n').map(row => row.split(','));
-    }
+      const rows = text.split('\n').slice(1);
 
-    function renderTable(data) {
-      const tbody = document.querySelector('#queueTable tbody');
-      tbody.innerHTML = '';
-      data.slice(1).forEach(row => {
-        if (row.length < 5) return;
-        const tr = document.createElement('tr');
-        if (row[3] === '等待中') tr.classList.add('waiting');
-        if (row[3] === '暫緩') tr.classList.add('hold');
-        row.forEach(cell => {
-          const td = document.createElement('td');
-          td.textContent = cell;
-          tr.appendChild(td);
-        });
+      const tbody = document.querySelector("#queueTable tbody");
+      rows.forEach(row => {
+        const cols = row.split(',');
+        if (cols.length < 7) return;
+
+        const tr = document.createElement("tr");
+        tr.className = cols[6] === '等待中' ? 'waiting' : (cols[6] === '暫緩' ? 'deferred' : '');
+
+        tr.innerHTML = `
+          <td>${cols[5]}</td>
+          <td>${cols[3]}</td>
+          <td>${cols[2]}</td>
+          <td>${cols[4]}</td>
+          <td>${cols[6]}</td>
+          <td>${cols[1]}</td>
+          <td>${cols[0]}</td>
+        `;
         tbody.appendChild(tr);
       });
     }
 
-    function addSearch(data) {
-      const input = document.getElementById('searchBox');
-      input.addEventListener('input', () => {
-        const keyword = input.value.toLowerCase();
-        const filtered = data.filter((row, i) => {
-          if (i === 0) return false;
-          return row.some(cell => cell.toLowerCase().includes(keyword));
-        });
-        renderTable([data[0], ...filtered]);
+    document.getElementById("search").addEventListener("input", function () {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll("#queueTable tbody tr").forEach(tr => {
+        const match = [...tr.children].some(td => td.textContent.toLowerCase().includes(search));
+        tr.style.display = match ? "" : "none";
       });
-    }
-
-    loadCSV(CSV_URL).then(data => {
-      renderTable(data);
-      addSearch(data);
     });
+
+    loadCSVFromGoogleSheet();
   </script>
 </body>
 </html>
