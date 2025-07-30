@@ -13,6 +13,8 @@
     .unity-simulated b { font-weight: bold; }
     .unity-simulated i { font-style: italic; }
     .unity-simulated u { text-decoration: underline; }
+    footer { text-align: center; color: #888; margin-top: 40px; font-size: 14px; }
+    .color-option { display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -26,29 +28,48 @@
     <button onclick="wrapTag('u')">底線</button>
     <button onclick="wrapTag('color', getColor())">顏色</button>
     <button onclick="wrapSizeTag()">字體大小</button>
-    
   </div>
 
-  <label>顏色 HEX 值（或 red, orange...）：</label>
-  <input type="text" id="colorPicker" placeholder="#ff0000 or red" value="orange">
+  <label>選擇顏色（預設）：</label>
+  <select id="colorPicker">
+    <option value="red">🔴 紅色</option>
+    <option value="orange" selected>🟠 橘色</option>
+    <option value="yellow">🟡 黃色</option>
+    <option value="green">🟢 綠色</option>
+    <option value="blue">🔵 藍色</option>
+    <option value="purple">🟣 紫色</option>
+    <option value="#ff69b4">💗 粉紅色</option>
+    <option value="#00ffff">🌐 青色</option>
+    <option value="#ffffff">⬜ 白色</option>
+    <option value="#000000">⬛ 黑色</option>
+    <option value="#999999">⚪ 灰色</option>
+    <option value="#ff9900">🟧 橘黃</option>
+    <option value="#cc0000">🔴 暗紅</option>
+  </select>
+
+  <label>或自選顏色：</label>
+  <input type="color" id="customColor" value="#ff9900" onchange="setCustomColor()">
 
   <label>字體大小：</label>
   <input type="number" id="sizeInput" placeholder="32" value="32">
 
-  
-
   <h3>🔍 預覽模擬（非真正渲染）：</h3>
   <div class="rendered unity-simulated" id="rendered"></div>
 
+  <footer>
+    製作者：TinXie
+  </footer>
+
   <script>
     const editor = document.getElementById('editor');
-        const rendered = document.getElementById('rendered');
+    const rendered = document.getElementById('rendered');
+    const colorPicker = document.getElementById('colorPicker');
+    const customColor = document.getElementById('customColor');
 
     editor.addEventListener('input', updateOutput);
 
     function updateOutput() {
       const value = editor.value;
-      
       let renderedHTML = value
         .replace(/<b>(.*?)<\/b>/g, '<b>$1</b>')
         .replace(/<i>(.*?)<\/i>/g, '<i>$1</i>')
@@ -81,10 +102,13 @@
     }
 
     function getColor() {
-      return document.getElementById('colorPicker').value || 'orange';
-    }
+  return customColor.value || colorPicker.value || '#ff9900';
+}
 
-    
+    function setCustomColor() {
+  updateOutput();
+}
+
     updateOutput();
   </script>
 </body>
