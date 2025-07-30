@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Queue 佇列資訊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #444;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .waiting {
+      background-color: #d4f4dd;
+    }
+    .hold {
+      background-color: #fbe3e3;
+    }
+    input[type="text"] {
+      padding: 8px;
+      width: 100%;
+      max-width: 300px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>科技升級佇列資訊</h1>
+  <input type="text" id="searchBox" placeholder="🔍 搜尋玩家、聯盟或狀態...">
+  <table id="queueTable">
+    <thead>
+      <tr>
+        <th>Queue</th>
+        <th>Player Name</th>
+        <th>Alliance</th>
+        <th>State</th>
+        <th>Reason</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="5">Loading data...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/1JyyAM9uiwLi36O1ayW9KQ6zlNY4HwoTe1GtQSPPqe7E/export?format=csv&gid=1929858160';
+
+    async function loadCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return text.split('\n').map(row => row.split(','));
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector('#queueTable tbody');
+      tbody.innerHTML = '';
+      data.slice(1).forEach(row => {
+        if (row.length < 5) return;
+        const tr = document.createElement('tr');
+        if (row[3] === '等待中') tr.classList.add('waiting');
+        if (row[3] === '暫緩') tr.classList.add('hold');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addSearch(data) {
+      const input = document.getElementById('searchBox');
+      input.addEventListener('input', () => {
+        const keyword = input.value.toLowerCase();
+        const filtered = data.filter((row, i) => {
+          if (i === 0) return false;
+          return row.some(cell => cell.toLowerCase().includes(keyword));
+        });
+        renderTable([data[0], ...filtered]);
+      });
+    }
+
+    loadCSV(CSV_URL).then(data => {
+      renderTable(data);
+      addSearch(data);
+    });
+  </script>
+</body>
+</html>
