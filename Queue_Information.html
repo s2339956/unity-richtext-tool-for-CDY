@@ -34,7 +34,7 @@
     tr.deferred {
       background-color: #3d1e1e;
     }
-    input[type="text"] {
+    input[type="text"], select {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
@@ -45,10 +45,16 @@
       border: 1px solid #555;
       border-radius: 5px;
     }
+    @media (max-width: 768px) {
+      table, th, td {
+        font-size: 14px;
+      }
+    }
   </style>
 </head>
 <body>
   <h1 id="title"></h1>
+  <select id="languageSelector"></select>
   <input type="text" id="search" placeholder="">
   <table id="queueTable">
     <thead>
@@ -57,10 +63,7 @@
     <tbody></tbody>
   </table>
   <script>
-    const browserLang = navigator.language;
-    let lang = 'en';
-    if (browserLang.startsWith('zh')) lang = 'zh';
-    else if (browserLang.startsWith('ko')) lang = 'ko';
+    let lang = navigator.language.startsWith('zh') ? 'zh' : navigator.language.startsWith('ko') ? 'ko' : 'en';
 
     const text = {
       zh: {
@@ -80,15 +83,34 @@
       }
     };
 
-    document.getElementById("title").textContent = text[lang].title;
-    document.getElementById("search").placeholder = text[lang].searchPlaceholder;
+    function updateLanguage(l) {
+      lang = l;
+      document.getElementById("title").textContent = text[lang].title;
+      document.getElementById("search").placeholder = text[lang].searchPlaceholder;
 
-    const headerRow = document.getElementById("tableHeader");
-    text[lang].headers.forEach(header => {
-      const th = document.createElement("th");
-      th.textContent = header;
-      headerRow.appendChild(th);
+      const headerRow = document.getElementById("tableHeader");
+      headerRow.innerHTML = "";
+      text[lang].headers.forEach(header => {
+        const th = document.createElement("th");
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+    }
+
+    const selector = document.getElementById("languageSelector");
+    const options = { zh: "中文", en: "English", ko: "한국어" };
+    for (const key in options) {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = options[key];
+      if (key === lang) opt.selected = true;
+      selector.appendChild(opt);
+    }
+    selector.addEventListener("change", () => {
+      updateLanguage(selector.value);
     });
+
+    updateLanguage(lang);
 
     async function loadCSV() {
       const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTbNPGMKMK1K_3kUCB8KNYUVdZXJvVddkzkDNZzN8rlxkKHeUOw-Y54NSiYzq0D5Upf9tZxw5tP1fOv/pub?gid=1929858160&single=true&output=csv');
