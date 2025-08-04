@@ -113,7 +113,7 @@
     updateLanguage(lang);
 
     async function loadCSV() {
-      const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTbNPGMKMK1K_3kUCB8KNYUVdZXJvVddkzkDNZzN8rlxkKHeUOw-Y54NSiYzq0D5Upf9tZxw5tP1fOv/pub?gid=1929858160&single=true&output=csv');
+      const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vT30ICOsuOZAS0j7e0EtX-zony4R31KPU3wlo9znJrCTHVHn5HcFENQnS9HDmK01QcdvaHEipFHP4Zz/pub?output=csv');
       const text = await response.text();
       const rows = text.split('\n').slice(1).map(r => r.split(','));
 
