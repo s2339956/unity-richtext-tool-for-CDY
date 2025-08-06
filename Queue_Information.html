@@ -142,7 +142,8 @@
       let queueNum = 1;
       const tbody = document.querySelector("#queueTable tbody");
       roles.forEach(role => {
-        const shuffled = shuffle(categorized[role]);
+        // const shuffled = shuffle(categorized[role]);
+        const sorted = categorized[role].sort((a, b) => new Date(a[0]) - new Date(b[0]));
         shuffled.forEach(row => {
           if (row.length < 7) return;
           const tr = document.createElement("tr");
